@@ -1,27 +1,27 @@
 package com.cleandrive.service;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 
 public class HashGenerator {
-    public String generateHash(File file) {
-        try (FileInputStream fis = new FileInputStream(file)) {
+    public static String generateSHA256(String filePath) {
+        try (InputStream is = Files.newInputStream(Paths.get(filePath))) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] byteArray = new byte[8192];
-            int bytesCount;
-            while ((bytesCount = fis.read(byteArray)) != -1) {
-                digest.update(byteArray, 0, bytesCount);
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = is.read(buffer)) > 0) {
+                digest.update(buffer, 0, read);
             }
-            byte[] bytes = digest.digest();
+            byte[] hashBytes = digest.digest();
             StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) {
+            for (byte b : hashBytes) {
                 sb.append(String.format("%02x", b));
             }
             return sb.toString();
         } catch (Exception e) {
-            // Safe fallback hash when file is locked or cannot be read
-            return "ERR_HASH_" + file.getName() + "_" + file.length() + "_" + file.lastModified();
+            return ""; // Returns empty string for unreadable/system-locked files
         }
     }
 }

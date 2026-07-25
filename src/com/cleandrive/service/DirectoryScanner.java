@@ -1,81 +1,51 @@
 package com.cleandrive.service;
 
+import com.cleandrive.datastructures.AVLTree;
 import com.cleandrive.datastructures.DirectoryGraph;
+import com.cleandrive.datastructures.MaxHeap;
 import com.cleandrive.model.FileRecord;
 import com.cleandrive.model.FolderNode;
+
 import java.io.File;
-import java.util.Date;
+import java.time.Instant;
 
 public class DirectoryScanner {
-    private DirectoryGraph graph;
-    private final HashGenerator hashGenerator;
 
-    public DirectoryScanner() {
-        this.graph = new DirectoryGraph();
-        this.hashGenerator = new HashGenerator();
-    }
+    public DirectoryGraph scanDirectoryDFS(String rootPath, AVLTree avlTree, MaxHeap maxHeap) {
+        DirectoryGraph graph = new DirectoryGraph(rootPath);
+        avlTree.clear();
+        maxHeap.clear();
 
-    public DirectoryGraph getGraph() {
+        traverseDFS(graph.getRoot(), avlTree, maxHeap);
         return graph;
     }
 
-    public void scan(String rootPath) {
-        File rootDir = new File(rootPath);
-        if (!rootDir.exists() || !rootDir.isDirectory()) {
-            throw new IllegalArgumentException("Provided path does not exist or is not a directory.");
-        }
+    private void traverseDFS(FolderNode currentFolder, AVLTree avlTree, MaxHeap maxHeap) {
+        File dir = new File(currentFolder.getFolderPath());
+        File[] fileList = dir.listFiles();
 
-        FolderNode rootNode = new FolderNode(rootDir.getAbsolutePath(), rootDir.getName());
-        graph = new DirectoryGraph();
-        graph.setRootNode(rootNode);
+        if (fileList == null) return;
 
-        scanRecursively(rootDir, rootNode);
-    }
-
-    private void scanRecursively(File currentDir, FolderNode currentNode) {
-        File[] filesList = currentDir.listFiles();
-        if (filesList == null) return;
-
-        for (File f : filesList) {
-            if (f.isDirectory()) {
-                FolderNode childNode = new FolderNode(f.getAbsolutePath(), f.getName());
-                graph.addEdge(currentNode, childNode);
-                currentNode.addSubFolder(childNode);
-                scanRecursively(f, childNode);
-            } else if (f.isFile()) {
-                String hash = hashGenerator.generateHash(f);
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                FolderNode childFolder = new FolderNode(file.getAbsolutePath());
+                currentFolder.addSubfolder(childFolder);
+                traverseDFS(childFolder, avlTree, maxHeap);
+            } else {
                 FileRecord record = new FileRecord(
-                    f.getAbsolutePath(), 
-                    f.getName(), 
-                    f.length(), 
-                    hash, 
-                    new Date(f.lastModified())
+                        file.getAbsolutePath(),
+                        file.getName(),
+                        file.length(),
+                        Instant.ofEpochMilli(file.lastModified())
                 );
-                currentNode.addFile(record);
+
+                String hash = HashGenerator.generateSHA256(record.getFilePath());
+                record.setFileHash(hash);
+
+                currentFolder.addFile(record);
+                avlTree.insert(record);
+                maxHeap.insert(record);
             }
-        }
-    }
-
-    public void printStructure() {
-        FolderNode root = graph.getRootNode();
-        if (root == null) {
-            System.out.println("No directory scanned yet.");
-            return;
-        }
-        printDFSHelper(root, 0);
-    }
-
-    private void printDFSHelper(FolderNode node, int depth) {
-        StringBuilder indent = new StringBuilder();
-        for (int i = 0; i < depth; i++) {
-            indent.append("  ");
-        }
-        System.out.println(indent.toString() + "[D] " + node.getName() + " (" + node.getPath() + ")");
-        for (FileRecord file : node.getFiles()) {
-            System.out.println(indent.toString() + "  - [F] " + file.getName() + " (" + file.getSize() + " bytes)");
-        }
-        for (FolderNode child : graph.getNeighbors(node)) {
-            printDFSHelper(child, depth + 1);
         }
     }
 }

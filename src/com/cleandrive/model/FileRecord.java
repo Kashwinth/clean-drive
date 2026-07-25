@@ -1,64 +1,32 @@
 package com.cleandrive.model;
 
-import java.util.Date;
+import java.time.Instant;
 
 public class FileRecord {
-    private String path;
-    private String name;
-    private long size;
-    private String hash;
-    private Date lastModified;
+    private String filePath;
+    private String fileName;
+    private long sizeInBytes;
+    private String fileHash;
+    private Instant lastModified;
 
-    public FileRecord(String path, String name, long size, String hash, Date lastModified) {
-        this.path = path;
-        this.name = name;
-        this.size = size;
-        this.hash = hash;
+    public FileRecord(String filePath, String fileName, long sizeInBytes, Instant lastModified) {
+        this.filePath = filePath;
+        this.fileName = fileName;
+        this.sizeInBytes = sizeInBytes;
         this.lastModified = lastModified;
+        this.fileHash = "";
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public void setSize(long size) {
-        this.size = size;
-    }
-
-    public String getHash() {
-        return hash;
-    }
-
-    public void setHash(String hash) {
-        this.hash = hash;
-    }
-
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
+    public String getFilePath() { return filePath; }
+    public String getFileName() { return fileName; }
+    public long getSizeInBytes() { return sizeInBytes; }
+    public String getFileHash() { return fileHash; }
+    public void setFileHash(String fileHash) { this.fileHash = fileHash; }
+    public Instant getLastModified() { return lastModified; }
 
     @Override
     public String toString() {
-        return String.format("%s (%d bytes, hash: %s)", name, size, hash);
+        double mb = sizeInBytes / (1024.0 * 1024.0);
+        return String.format("%s (%.2f MB) - %s", fileName, mb, filePath);
     }
 }

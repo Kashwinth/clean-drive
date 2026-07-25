@@ -1,57 +1,29 @@
 package com.cleandrive.datastructures;
 
 import com.cleandrive.model.FolderNode;
-import com.cleandrive.model.FileRecord;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class DirectoryGraph {
-    private FolderNode rootNode;
-    private final Map<FolderNode, List<FolderNode>> adjList;
+    private FolderNode root;
 
-    public DirectoryGraph() {
-        this.adjList = new HashMap<>();
+    public DirectoryGraph(String rootPath) {
+        this.root = new FolderNode(rootPath);
     }
 
-    public FolderNode getRootNode() {
-        return rootNode;
+    public FolderNode getRoot() {
+        return root;
     }
 
-    public void setRootNode(FolderNode rootNode) {
-        this.rootNode = rootNode;
-        addVertex(rootNode);
+    public void printGraphStructure() {
+        System.out.println("\n--- Folder Structure Hierarchy (Graph Visualization) ---");
+        printRecursive(root, "");
     }
 
-    public void addVertex(FolderNode folder) {
-        adjList.putIfAbsent(folder, new ArrayList<>());
-    }
-
-    public void addEdge(FolderNode parent, FolderNode child) {
-        addVertex(parent);
-        addVertex(child);
-        if (!adjList.get(parent).contains(child)) {
-            adjList.get(parent).add(child);
-        }
-    }
-
-    public List<FolderNode> getNeighbors(FolderNode folder) {
-        return adjList.getOrDefault(folder, new ArrayList<>());
-    }
-
-    public List<FileRecord> getAllFilesDFS() {
-        List<FileRecord> allFiles = new ArrayList<>();
-        if (rootNode != null) {
-            dfsHelper(rootNode, allFiles);
-        }
-        return allFiles;
-    }
-
-    private void dfsHelper(FolderNode node, List<FileRecord> allFiles) {
-        allFiles.addAll(node.getFiles());
-        for (FolderNode child : getNeighbors(node)) {
-            dfsHelper(child, allFiles);
+    private void printRecursive(FolderNode node, String indent) {
+        System.out.println(indent + "├── [Folder] " + node.getFolderPath());
+        for (FolderNode child : node.getSubfolders()) {
+            printRecursive(child, indent + "│   ");
         }
     }
 }

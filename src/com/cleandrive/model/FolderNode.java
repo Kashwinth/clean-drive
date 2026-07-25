@@ -4,52 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FolderNode {
-    private String path;
-    private String name;
-    private final List<FolderNode> subFolders;
-    private final List<FileRecord> files;
+    private String folderPath;
+    private List<FolderNode> subfolders;
+    private List<FileRecord> files;
 
-    public FolderNode(String path, String name) {
-        this.path = path;
-        this.name = name;
-        this.subFolders = new ArrayList<>();
+    public FolderNode(String folderPath) {
+        this.folderPath = folderPath;
+        this.subfolders = new ArrayList<>();
         this.files = new ArrayList<>();
     }
 
-    public String getPath() {
-        return path;
-    }
+    public String getFolderPath() { return folderPath; }
+    public List<FolderNode> getSubfolders() { return subfolders; }
+    public List<FileRecord> getFiles() { return files; }
 
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<FolderNode> getSubFolders() {
-        return subFolders;
-    }
-
-    public List<FileRecord> getFiles() {
-        return files;
-    }
-
-    public void addSubFolder(FolderNode folder) {
-        subFolders.add(folder);
+    public void addSubfolder(FolderNode child) {
+        this.subfolders.add(child);
     }
 
     public void addFile(FileRecord file) {
-        files.add(file);
-    }
-
-    @Override
-    public String toString() {
-        return name + " (" + path + ")";
+        this.files.add(file);
     }
 }
